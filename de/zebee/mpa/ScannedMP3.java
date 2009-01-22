@@ -31,7 +31,7 @@ public class ScannedMP3 {
 	private int maxRes = 0;
 	private int encDelay = 576;
 	private int encPadding = 576*3;
-	private Vector byteBuffers = new Vector();;
+	private Vector<byte[]> byteBuffers = new Vector<byte[]>();;
 	private byte[] currBB = null;
 	private int currBBofs = 0;
 	private int musicFrameCount = 0;

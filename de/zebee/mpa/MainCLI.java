@@ -10,9 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -156,8 +155,8 @@ public class MainCLI {
 			return;
 		}
 		long[][] tracksToCrop = null;
-		Map trackPerformers = new HashMap();
-		Map trackTitles = new HashMap();
+		ArrayList<String> trackPerformers = new ArrayList<String>(25);
+		ArrayList<String> trackTitles = new ArrayList<String>(25);
 		if (cutParams!=null) {
 			if (cutCue) {
 				String[] track = new String[1];
@@ -215,11 +214,11 @@ public class MainCLI {
 			tracksToCrop = parseManualCrop(cutParams,scannedMP3.getSamplingFrequency());
 		}
 		if (overrideAlbum!=null) {
-			trackTitles.put(new Integer(0),overrideAlbum);
+			trackTitles.add(overrideAlbum);
 		}
 		if (overrideArtist!=null) {
 			trackPerformers.clear();
-			trackPerformers.put(new Integer(0),overrideArtist);
+			trackPerformers.add(overrideArtist);
 		}
 		System.out.println(scannedMP3);
 		if (tracksToCrop!=null && tracksToCrop.length>1) {
@@ -358,8 +357,8 @@ public class MainCLI {
 		return s;
 	}
 
-	public static long[][] loadCUE(String filename, long sampleCount, Map trackPerformers, Map trackTitles, String[] file) throws IOException {
-		Vector v = new Vector();
+	public static long[][] loadCUE(String filename, long sampleCount, ArrayList<String> trackPerformers, ArrayList<String> trackTitles, String[] file) throws IOException {
+		Vector<long[]> v = new Vector<long[]>();
 		FileInputStream fips = new FileInputStream(filename);
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fips));
@@ -391,7 +390,7 @@ public class MainCLI {
 								while (st.hasMoreTokens()) {
 									t += " "+st.nextToken();
 								}
-								trackPerformers.put(new Integer(trackNr),filter(t));
+								trackPerformers.add(trackNr,filter(t));
 							}
 						} else if (token.equals("title")) {
 							if (st.hasMoreTokens()) {
@@ -399,7 +398,7 @@ public class MainCLI {
 								while (st.hasMoreTokens()) {
 									t += " "+st.nextToken();
 								}
-								trackTitles.put(new Integer(trackNr),filter(t));
+								trackTitles.add(trackNr,filter(t));
 							}
 						} else if (token.equals("track")) {
 							if (st.hasMoreTokens()) {
@@ -434,8 +433,8 @@ public class MainCLI {
 	}
 
 	public static long[][] parseManualCrop(String param, float samplingFrequency) {
-		Vector r = new Vector();
-		HashSet set = new HashSet();
+		Vector<long[]> r = new Vector<long[]>();
+		HashSet<Integer> set = new HashSet<Integer>();
 		for (StringTokenizer tracks = new StringTokenizer(param,",",false); tracks.hasMoreTokens();) {
 			String trk = tracks.nextToken();
 			StringTokenizer parts = new StringTokenizer(trk,":-",false);
