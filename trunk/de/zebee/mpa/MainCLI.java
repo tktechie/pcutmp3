@@ -214,11 +214,11 @@ public class MainCLI {
 			tracksToCrop = parseManualCrop(cutParams,scannedMP3.getSamplingFrequency());
 		}
 		if (overrideAlbum!=null) {
-			trackTitles.add(overrideAlbum);
+			trackTitles.add(0,overrideAlbum);
 		}
 		if (overrideArtist!=null) {
 			trackPerformers.clear();
-			trackPerformers.add(overrideArtist);
+			trackPerformers.add(0,overrideArtist);
 		}
 		System.out.println(scannedMP3);
 		if (tracksToCrop!=null && tracksToCrop.length>1) {
@@ -243,9 +243,9 @@ public class MainCLI {
          String ta = ""; // track album
          String ap = ""; // album performer
          if (writeTag) {
-         	String tmp = (String)trackTitles.get(new Integer(0));
+         	String tmp = trackTitles.get(0);
          	if (tmp!=null) ta = tmp;
-         	tmp = (String)trackPerformers.get(new Integer(0));
+         	tmp = trackPerformers.get(0);
          	if (tmp!=null) ap = tmp;
          }
          if (outDir!=null && outDir.length()>0) {
@@ -267,10 +267,9 @@ public class MainCLI {
          	int tracknumint = (int)track[0];
          	String tn = leadingZero((int)track[0]);
          	if (writeTag) {
-         		Integer tniobj = new Integer(tracknumint);
-         		String tmp = (String)trackTitles.get(tniobj);
+         		String tmp = trackTitles.get(tracknumint);
          		if (tmp!=null) tt = tmp; else tt = "Track "+tn;
-         		tmp = (String)trackPerformers.get(tniobj);
+         		tmp = trackPerformers.get(tracknumint);
          		if (tmp==null) tmp = ap;
          		if (tmp!=null) tp = tmp; else tp = "Unknown Artist";
          	}
