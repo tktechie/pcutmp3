@@ -72,7 +72,7 @@ public class MainCLI {
 	public static final String DEFAULT_NAMING_SCHEME = "%n. %p - %t";
 
 	public static void main(String[] args) throws IOException {
-		System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.97\n");
+		System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.97.1\n");
 		if (args==null || args.length<1) {
 			System.out.println("Description:");
 			System.out.println("  This tool is able to do sample granular cutting of MP3 streams via");
@@ -254,6 +254,12 @@ public class MainCLI {
          	if (outDir.charAt(outDir.length()-1)!=p) {
          		outDir += p;
          	}
+         	
+         	File directory = new File(outDir);
+         	if (!directory.exists()) {
+         		directory.mkdir();
+         	}
+         	
          } else {
          	outDir = null;
          }
