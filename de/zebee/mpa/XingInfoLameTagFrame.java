@@ -31,6 +31,7 @@ public class XingInfoLameTagFrame {
 		System.arraycopy(bb,0,dest,dofs,frameSize);
 	} 
 
+	@Override
 	public String toString() {
 		if (frameSize==0) return "";
 		StringBuffer sb = new StringBuffer();

@@ -38,6 +38,7 @@ public class ScannedMP3 {
 	private int samplesPerFrame = 0;
 	private long startSample = UNKNOWN_START_SAMPLE;
 
+	@Override
 	public String toString() {
 		boolean accurate = false;
 		String s = "first frame header = "+firstFrameHeader.toString()+"\n";
@@ -72,7 +73,7 @@ public class ScannedMP3 {
 		while (page>=byteBuffers.size()) {
 			byteBuffers.add(null);
 		}
-		byte[] bb = (byte[])byteBuffers.get(page);
+		byte[] bb = byteBuffers.get(page);
 		if (bb==null) {
 			bb = new byte[BBSPP];
 			byteBuffers.set(page,bb);

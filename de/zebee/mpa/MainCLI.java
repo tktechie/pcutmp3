@@ -28,7 +28,7 @@ public class MainCLI {
 
 	private static String EVIL_CHARS   = "?*\":/\\";
 	private static String REPLACE_WITH = "  '   ";
-	
+
 	public static String replaceEvilCharacters(String s) {
 		StringBuffer sb = new StringBuffer(s);
 		for (int cc=EVIL_CHARS.length()-1; cc>=0; cc--) {
@@ -109,7 +109,7 @@ public class MainCLI {
 			System.out.println("");
 			System.out.println("Developed by Sebastian Gesemann.\n" +
 					"  ID3v2 Support added by Chris Banes using the library JID3.\n" +
-					"     http://jid3.blinkenlights.org/");
+			"     http://jid3.blinkenlights.org/");
 			return;
 		}
 		String cutParams = null;
@@ -229,7 +229,7 @@ public class MainCLI {
 			}
 		}
 		if (tracksToCrop!=null && tracksToCrop.length>0) {
-         boolean writeTag = trackPerformers.size()>0 || trackTitles.size()>0;
+			boolean writeTag = trackPerformers.size()>0 || trackTitles.size()>0;
 			if (cutCue) {
 				tracksToCrop[tracksToCrop.length-1][2] = scannedMP3.getSampleCount();
 			}
@@ -238,86 +238,86 @@ public class MainCLI {
 			if (li>=0) {
 				src = src.substring(0,li);
 			}
-         String tt = ""; // track title
-         String tp = ""; // track performer
-         String ta = ""; // track album
-         String ap = ""; // album performer
-         if (writeTag) {
-         	String tmp = trackTitles.get(0);
-         	if (tmp!=null) ta = tmp;
-         	tmp = trackPerformers.get(0);
-         	if (tmp!=null) ap = tmp;
-         }
-         if (outDir!=null && outDir.length()>0) {
-         	char p = File.separatorChar;
-         	if (outDir.charAt(outDir.length()-1)!=p) {
-         		outDir += p;
-         	}
-         	
-         	File directory = new File(outDir);
-         	if (!directory.exists()) {
-         		directory.mkdir();
-         	}
-         	
-         } else {
-         	outDir = null;
-         }
-         for (int i=0; i<tracksToCrop.length; i++) {
-         	long[] track = tracksToCrop[i];
-         	int tracknumint = (int)track[0];
-         	String tn = leadingZero((int)track[0]);
-         	if (writeTag) {
-         		String tmp = trackTitles.get(tracknumint);
-         		if (tmp!=null) tt = tmp; else tt = "Track "+tn;
-         		tmp = trackPerformers.get(tracknumint);
-         		if (tmp==null) tmp = ap;
-         		if (tmp!=null) tp = tmp; else tp = "Unknown Artist";
-         	}
-         	String fn = replaceEvilCharacters(evalScheme(outScheme,src,tn,tt,tp,ta))+".mp3";
-         	if (outDir!=null) fn = outDir + fn;
-         	System.out.println("writing \""+fn+"\" ...");
-         	FileOutputStream fops = new FileOutputStream(fn);
-         	try {
-         		scannedMP3.crop(track[1],track[2],new FileInputStream(srcFileFile),fops);
-         	} finally {
-         		fops.close();
-         	}
-         	
-         	if (writeTag) {
-         		try {
-         			File oSourceFile = new File(fn);
-         			MediaFile oMediaFile = new MP3File(oSourceFile);
+			String tt = ""; // track title
+			String tp = ""; // track performer
+			String ta = ""; // track album
+			String ap = ""; // album performer
+			if (writeTag) {
+				String tmp = trackTitles.get(0);
+				if (tmp!=null) ta = tmp;
+				tmp = trackPerformers.get(0);
+				if (tmp!=null) ap = tmp;
+			}
+			if (outDir!=null && outDir.length()>0) {
+				char p = File.separatorChar;
+				if (outDir.charAt(outDir.length()-1)!=p) {
+					outDir += p;
+				}
 
-         			ID3V1_0Tag oID3V1_0Tag = new ID3V1_0Tag();
-         			ID3V2_3_0Tag oID3V2_3_0Tag = new ID3V2_3_0Tag();
-         			
-         			if (tn!=null) {
-         				oID3V2_3_0Tag.setTrackNumber(Integer.parseInt(tn));
-         			}
-         			if (ta!=null && ta.length()>0) {
-         				oID3V2_3_0Tag.setAlbum(ta);
-         				oID3V1_0Tag.setAlbum(ta);
-         			}
-         			if (tp!=null && tp.length()>0) {
-         				oID3V2_3_0Tag.setArtist(tp);
-         				oID3V1_0Tag.setArtist(tp);
-         			}
-         			if (tt!=null && tt.length()>0) {
-         				oID3V2_3_0Tag.setTitle(tt);
-         				oID3V1_0Tag.setTitle(tt);
-         			}
+				File directory = new File(outDir);
+				if (!directory.exists()) {
+					directory.mkdir();
+				}
 
-         			// set this v2.3.0 tag in the media file object
-         			oMediaFile.setID3Tag(oID3V2_3_0Tag);
+			} else {
+				outDir = null;
+			}
+			for (int i=0; i<tracksToCrop.length; i++) {
+				long[] track = tracksToCrop[i];
+				int tracknumint = (int)track[0];
+				String tn = leadingZero((int)track[0]);
+				if (writeTag) {
+					String tmp = trackTitles.get(tracknumint);
+					if (tmp!=null) tt = tmp; else tt = "Track "+tn;
+					tmp = trackPerformers.get(tracknumint);
+					if (tmp==null) tmp = ap;
+					if (tmp!=null) tp = tmp; else tp = "Unknown Artist";
+				}
+				String fn = replaceEvilCharacters(evalScheme(outScheme,src,tn,tt,tp,ta))+".mp3";
+				if (outDir!=null) fn = outDir + fn;
+				System.out.println("writing \""+fn+"\" ...");
+				FileOutputStream fops = new FileOutputStream(fn);
+				try {
+					scannedMP3.crop(track[1],track[2],new FileInputStream(srcFileFile),fops);
+				} finally {
+					fops.close();
+				}
 
-         			// update the actual file to reflect the current state of our object 
-         			oMediaFile.sync();
-         		}
-         		catch (Exception e) {
-         		}
-     		}
-         }
-         System.out.println("done.");
+				if (writeTag) {
+					try {
+						File oSourceFile = new File(fn);
+						MediaFile oMediaFile = new MP3File(oSourceFile);
+
+						ID3V1_0Tag oID3V1_0Tag = new ID3V1_0Tag();
+						ID3V2_3_0Tag oID3V2_3_0Tag = new ID3V2_3_0Tag();
+
+						if (tn!=null) {
+							oID3V2_3_0Tag.setTrackNumber(Integer.parseInt(tn));
+						}
+						if (ta!=null && ta.length()>0) {
+							oID3V2_3_0Tag.setAlbum(ta);
+							oID3V1_0Tag.setAlbum(ta);
+						}
+						if (tp!=null && tp.length()>0) {
+							oID3V2_3_0Tag.setArtist(tp);
+							oID3V1_0Tag.setArtist(tp);
+						}
+						if (tt!=null && tt.length()>0) {
+							oID3V2_3_0Tag.setTitle(tt);
+							oID3V1_0Tag.setTitle(tt);
+						}
+
+						// set this v2.3.0 tag in the media file object
+						oMediaFile.setID3Tag(oID3V2_3_0Tag);
+
+						// update the actual file to reflect the current state of our object 
+						oMediaFile.sync();
+					}
+					catch (Exception e) {
+					}
+				}
+			}
+			System.out.println("done.");
 		}
 	}
 
@@ -347,7 +347,7 @@ public class MainCLI {
 			}
 		}
 		return sb.toString();
-   }
+	}
 
 	private static String filter(String s) {
 		if (s.length()>=2 && s.startsWith("\"") && s.endsWith("\"")) {
@@ -420,7 +420,7 @@ public class MainCLI {
 			}
 			long[][] result = new long[v.size()][];
 			for (int i=v.size()-1; i>=0; i--) {
-				long[] t = (long[])v.elementAt(i);
+				long[] t = v.elementAt(i);
 				t[2] = sampleCount;
 				sampleCount = t[1];
 				result[i] = t;
@@ -478,7 +478,7 @@ public class MainCLI {
 		}
 		long[][] rr = new long[r.size()][];
 		for (int i=0; i<r.size(); i++) {
-			rr[i] = (long[])r.elementAt(i);
+			rr[i] = r.elementAt(i);
 		}
 		return rr;
 	}
