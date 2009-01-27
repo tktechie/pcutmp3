@@ -223,7 +223,7 @@ public class MPAFrameParser {
 							if (junkh!=null) {
 								result += 4; // inklusive header
 								for (int z=0; z<result; z++) {
-									junkh.write(((int)destBuffer[z]) & 0xFF);
+									junkh.write((destBuffer[z]) & 0xFF);
 								}
 								junkh.endOfJunkBlock();
 							}
