@@ -124,30 +124,30 @@ public class MainCLI {
 			System.out.println("missing option parameter");
 			return;
 		}
-		
-		
+
+
 		Cue cueFile = null;
-		
+
 		if (cutParams != null) {
 			if (cutCue) {
-				
+
 				cueFile = loadCUE(cutParams, 1L << 50);
 
 				if (srcFile == null) {
 					srcFile = cueFile.getPathToMP3();
 					File fo = new File(srcFile);
-					
+
 					// If Filename isn't absolute then try to use the one given in the parms
 					if (!fo.isAbsolute()) {
 						File t = new File(cutParams);
-						
+
 						String p = t.getParent();
 						if (p != null) {
 							fo = new File(p, srcFile);
 							srcFile = fo.getAbsolutePath();
 						}
 					}
-					
+
 					if (!srcFile.toLowerCase().endsWith(".mp3")) {
 						String t = fo.getName();
 						int p = t.lastIndexOf('.');
@@ -155,13 +155,13 @@ public class MainCLI {
 							srcFile += ".mp3";
 						} else {
 							srcFile = srcFile.substring(0, srcFile.length() - t.length() + p)
-									+ ".mp3";
+							+ ".mp3";
 						}
 					}
 				}
 			}
 		}
-		
+
 
 		File srcFileFile = null;
 		if (srcFile != null) {
@@ -174,8 +174,8 @@ public class MainCLI {
 		else {
 			System.out.println("source mp3 file not given");
 		}
-		
-		
+
+
 		ScannedMP3 scannedMP3 = null;
 		try {
 			System.out.println("scanning \"" + srcFile + "\" ...");
@@ -185,34 +185,34 @@ public class MainCLI {
 			return;
 		} catch (IOException e) {
 			System.out
-					.println("i/o error occured while scanning source mp3 file ("
-							+ srcFileFile + ")");
+			.println("i/o error occured while scanning source mp3 file ("
+					+ srcFileFile + ")");
 			e.printStackTrace();
 			return;
 		}
-		
-		
+
+
 		/*
 		 if (cutParams != null && !cutCue) {
 			cueFile = parseManualCrop(cutParams, scannedMP3
 					.getSamplingFrequency());
 		}
-		*/
-		
-		
+		 */
+
+
 		System.out.println(scannedMP3);
 		if (cueFile != null) {
 			if (outScheme.indexOf("%n") < 0 && outScheme.indexOf("%t") < 0) {
 				System.out
-						.println("The usage of either %n or %t is mandatory in the naming");
+				.println("The usage of either %n or %t is mandatory in the naming");
 				System.out
-						.println("scheme if you want to extract more than one track!");
+				.println("scheme if you want to extract more than one track!");
 				return;
 			}
 		}
-		
-		
-		
+
+
+
 		if (cueFile != null) {
 			boolean writeTag = cueFile.getNumberTracks() > 0;
 
@@ -220,25 +220,25 @@ public class MainCLI {
 			if (cutCue) {
 				cueFile.getTrack(cueFile.getNumberTracks() - 1).setEndSector(scannedMP3.getSampleCount());
 			}
-			
-			
+
+
 			String src = new File(srcFile).getName();
 			int li = src.lastIndexOf('.');
 			if (li >= 0) {
 				src = src.substring(0, li);
 			}
-			
+
 			String tt = ""; // track title
 			String tp = ""; // track performer
 			String ta = ""; // track album
 			String ap = ""; // album performer
 
 			if (writeTag) {
-					ta = cueFile.getTitle();
-					ap = cueFile.getPerformer();
+				ta = cueFile.getTitle();
+				ap = cueFile.getPerformer();
 			}
-			
-			
+
+
 			if (outDir != null && outDir.length() > 0) {
 				char p = File.separatorChar;
 				if (outDir.charAt(outDir.length() - 1) != p) {
@@ -254,12 +254,12 @@ public class MainCLI {
 				outDir = null;
 			}
 
-			
-			for (int i = 1; i <= cueFile.getNumberTracks() ; i++) {
+
+			for (int i = 0; i < cueFile.getNumberTracks() ; i++) {
 				Track t = cueFile.getTrack(i);
-				
-				String tn = leadingZero(i);
-				
+
+				String tn = leadingZero(t.getTrackNumber());
+
 				if (writeTag) {
 
 					String tmp = t.getTitle();
@@ -274,7 +274,7 @@ public class MainCLI {
 					else
 						tp = "Unknown Artist";
 				}
-				
+
 				String fn = replaceEvilCharacters(evalScheme(outScheme, src,
 						tn, tt, tp, ta))
 						+ ".mp3";
@@ -385,7 +385,7 @@ public class MainCLI {
 	}
 
 	public static Cue loadCUE(String cueFilename, long sampleCount)
-			throws IOException {
+	throws IOException {
 
 		Cue cue = new Cue();
 
@@ -394,112 +394,127 @@ public class MainCLI {
 		FileInputStream fips = new FileInputStream(cueFilename);
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fips));
-			int trackNumber = 0;
+			int trackNumber = 1;
 
 			// Filename and Path of the MP3 to be split
 			String mp3Filename = null;
-
-			// Next Line in Cue File
-			String line = null;
-
-			boolean hitTracksYet = false;
 			
-			do {
-				// Next line
-				line = br.readLine().trim();
+			// Current Track
+			Track currentTrack = null;
 
-				StringTokenizer st = new StringTokenizer(line, " ", false);
+			try {
+				// First Line in Cue File
+				String line = br.readLine().trim();
+				
+				while (line != null) {
+					StringTokenizer st = new StringTokenizer(line, " ", false);
 
-				if (st.countTokens() > 0) {
+					if (st.countTokens() > 0) {
+						
+						String token = st.nextToken().toLowerCase();
 
-					Track currentTrack = new Track();
-					String token = st.nextToken().toLowerCase();
+						if (token.equals("file")) {
+							if (mp3Filename == null) {
+								String t = "";
+								while (st.hasMoreTokens()) {
+									t = st.nextToken();
+								}
 
-					if (token.equals("file")) {
-						if (mp3Filename == null) {
-							String t = "";
-							while (st.hasMoreTokens()) {
-								t = st.nextToken();
-							}
-
-							t = line.substring(5, line.length() - t.length())
-									.trim();
-							if (t.startsWith("\"") && t.endsWith("\"")
-									&& t.length() >= 2) {
-								t = t.substring(1, t.length() - 1);
-							}
-							mp3Filename = t;
-							cue.setPathToMP3(mp3Filename);
-						}
-					}
-
-					else if (token.equals("performer")) {
-						if (st.hasMoreTokens()) {
-							String t = st.nextToken();
-							while (st.hasMoreTokens()) {
-								t += " " + st.nextToken();
-							}
-
-							if (hitTracksYet) {
-								currentTrack.setPerformer(filter(t));
-							} else {
-								cue.setPerformer(filter(t));
+								t = line.substring(5, line.length() - t.length())
+								.trim();
+								if (t.startsWith("\"") && t.endsWith("\"")
+										&& t.length() >= 2) {
+									t = t.substring(1, t.length() - 1);
+								}
+								mp3Filename = t;
+								cue.setPathToMP3(mp3Filename);
 							}
 						}
-					} else if (token.equals("title")) {
-						if (st.hasMoreTokens()) {
-							String t = st.nextToken();
-							while (st.hasMoreTokens()) {
-								t += " " + st.nextToken();
-							}
+						else if (token.equals("performer")) {
+							if (st.hasMoreTokens()) {
+								String t = st.nextToken();
+								while (st.hasMoreTokens()) {
+									t += " " + st.nextToken();
+								}
 
-							if (hitTracksYet) {
-								currentTrack.setTitle(filter(t));
-							} else {
-								cue.setTitle(filter(t));
+								if (currentTrack != null) {
+									currentTrack.setPerformer(filter(t));
+								} else {
+									cue.setPerformer(filter(t));
+								}
+							}
+						}
+						else if (token.equals("title")) {
+							if (st.hasMoreTokens()) {
+								String t = st.nextToken();
+								while (st.hasMoreTokens()) {
+									t += " " + st.nextToken();
+								}
+
+								if (currentTrack != null) {
+									currentTrack.setTitle(filter(t));
+								} else {
+									cue.setTitle(filter(t));
+								}
+
 							}
 
 						}
-					} else if (token.equals("track")) {
-						if (st.hasMoreTokens()) {
-							trackNumber = Math.max(trackNumber, Integer
-									.parseInt(st.nextToken()));
-						}
-						currentTrack.setTrackNumber(trackNumber);
-						hitTracksYet = true;
-					}
+						else if (token.equals("track")) {
+							
+							currentTrack = new Track();
+							currentTrack.setTrackNumber(trackNumber);
+							
+							
+							if (st.hasMoreTokens()) {
+								trackNumber = Math.max(trackNumber, Integer
+										.parseInt(st.nextToken()));
+							}
 
-					else if (token.equals("index")) {
-						try {
-							int idx = Integer.parseInt(st.nextToken());
-							long smp = MSFstring2sector(st.nextToken()) * 588L;
-							if (idx == 1) {
-								currentTrack.setStartSector(smp);
+							
+						}
+						else if (token.equals("index")) {
+							try {
+								int idx = Integer.parseInt(st.nextToken());
+								long smp = MSFstring2sector(st.nextToken()) * 588L;
+								if (idx == 1) {
+
+									if (currentTrack != null) {
+										currentTrack.setStartSector(smp);
+									}
+									
+								}
+							} catch (NoSuchElementException nse) {}
+							
+							if (currentTrack != null) {
+								cue.addTrack(trackNumber, currentTrack);
 								trackNumber++;
 							}
-						} catch (NoSuchElementException nse) {}
+							currentTrack = null;
+						}
 					}
 
-					cue.addTrack(trackNumber, currentTrack);
-					currentTrack = null;
-
+					// Next line
+					line = br.readLine().trim();
 				}
-			} while (line != null);
-			
+			}
+			catch (Exception e) {}
+
 			cue.fillOutEndTrackSectors();
 
-			return cue;
 
 		} finally {
 			fips.close();
 		}
+
+		return cue;
 	}
 
 	public static long[][] parseManualCrop(String param, float samplingFrequency) {
 		Vector<long[]> r = new Vector<long[]>();
 		HashSet<Integer> set = new HashSet<Integer>();
 		for (StringTokenizer tracks = new StringTokenizer(param, ",", false); tracks
-				.hasMoreTokens();) {
+		.hasMoreTokens();) {
 			String trk = tracks.nextToken();
 			StringTokenizer parts = new StringTokenizer(trk, ":-", false);
 			if (parts.countTokens() == 3) {
@@ -530,7 +545,7 @@ public class MainCLI {
 							}
 							float sss = Float.parseFloat(nt);
 							z = Math
-									.round((mmm * 60 + sss) * samplingFrequency);
+							.round((mmm * 60 + sss) * samplingFrequency);
 						} else
 							z = Math.abs(Integer.parseInt(nt));
 						if (pt == 2)
@@ -558,68 +573,68 @@ public class MainCLI {
 	private static void printHelp() {
 		System.out.println("Description:");
 		System.out
-				.println("  This tool is able to do sample granular cutting of MP3 streams via");
+		.println("  This tool is able to do sample granular cutting of MP3 streams via");
 		System.out
-				.println("  the LAME-Tag's delay/padding values. A player capable of properly");
+		.println("  the LAME-Tag's delay/padding values. A player capable of properly");
 		System.out
-				.println("  interpreting the LAME-Tag is needed in order to enjoy this tool.\n");
+		.println("  interpreting the LAME-Tag is needed in order to enjoy this tool.\n");
 		System.out.println("Syntax:");
 		System.out
-				.println("  java -jar pcutmp3.jar [<options>] [<source-mp3-filename>]");
+		.println("  java -jar pcutmp3.jar [<options>] [<source-mp3-filename>]");
 		System.out.println("  (Default operation is scanning only)\n");
 		System.out.println("Available options:");
 		System.out
-				.println("  --cue <cue-filename>     split source mp3 via cue sheet");
+		.println("  --cue <cue-filename>     split source mp3 via cue sheet");
 		System.out
-				.println("                           mp3 source can be omitted if it's already");
+		.println("                           mp3 source can be omitted if it's already");
 		System.out
-				.println("                           referenced by the CUE sheet");
+		.println("                           referenced by the CUE sheet");
 		System.out
-				.println("  --crop t:s-e[,t:s-e[..]] crop tracks manually, t = track#");
+		.println("  --crop t:s-e[,t:s-e[..]] crop tracks manually, t = track#");
 		System.out
-				.println("                           s = start sample/time (inclusive)");
+		.println("                           s = start sample/time (inclusive)");
 		System.out
-				.println("                           e = end sample/time (exclusive)");
+		.println("                           e = end sample/time (exclusive)");
 		System.out
-				.println("                           Time is specified in [XXm]YY[.ZZ]s");
+		.println("                           Time is specified in [XXm]YY[.ZZ]s");
 		System.out
-				.println("                           for XX minutes and YY.ZZ seconds");
+		.println("                           for XX minutes and YY.ZZ seconds");
 		System.out
-				.println("  --out <scheme>           specify custom naming scheme where");
+		.println("  --out <scheme>           specify custom naming scheme where");
 		System.out
-				.println("                           %s = source filename (without extension)");
+		.println("                           %s = source filename (without extension)");
 		System.out
-				.println("                           %n = track number (leading zero)");
+		.println("                           %n = track number (leading zero)");
 		System.out
-				.println("                           %t = track title (from CUE sheet)");
+		.println("                           %t = track title (from CUE sheet)");
 		System.out
-				.println("                           %p = track performer (from CUE sheet)");
+		.println("                           %p = track performer (from CUE sheet)");
 		System.out
-				.println("                           %a = album name (from CUE sheet)");
+		.println("                           %a = album name (from CUE sheet)");
 		System.out.println("                           Default is \""
 				+ DEFAULT_NAMING_SCHEME + "\"");
 		System.out
-				.println("  --dir <directory>        specify destination directory");
+		.println("  --dir <directory>        specify destination directory");
 		System.out
-				.println("                           Default is the current working directory");
+		.println("                           Default is the current working directory");
 		System.out
-				.println("  --album <albumname>      set album name (for ID3 tag)");
+		.println("  --album <albumname>      set album name (for ID3 tag)");
 		System.out
-				.println("  --artist <artistname>    set artist name (for ID3 tag)");
+		.println("  --artist <artistname>    set artist name (for ID3 tag)");
 		System.out.println("\nNote:");
 		System.out
-				.println("  Option parameters which contain space characters must be");
+		.println("  Option parameters which contain space characters must be");
 		System.out.println("  enclosed via quotation marks (see examples).");
 		System.out.println("\nExamples:");
 		System.out
-				.println("  java -jar pcutmp3.jar --cue something.cue --out \"%n - %t\"");
+		.println("  java -jar pcutmp3.jar --cue something.cue --out \"%n - %t\"");
 		System.out
-				.println("  java -jar pcutmp3.jar --crop 1:0-8000,2:88.23s-3m10s largefile.mp3");
+		.println("  java -jar pcutmp3.jar --crop 1:0-8000,2:88.23s-3m10s largefile.mp3");
 		System.out.println("");
 		System.out
-				.println("Developed by Sebastian Gesemann.\n"
-						+ "  ID3v2 Support added by Chris Banes using the library JID3.\n"
-						+ "     http://jid3.blinkenlights.org/");
+		.println("Developed by Sebastian Gesemann.\n"
+				+ "  ID3v2 Support added by Chris Banes using the library JID3.\n"
+				+ "     http://jid3.blinkenlights.org/");
 	}
 
 }
