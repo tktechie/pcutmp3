@@ -307,6 +307,9 @@ public class MainCLI {
 							oID3V2_3_0Tag.setAlbum(ta);
 							oID3V1_0Tag.setAlbum(ta);
 						}
+						if (ap != null && ap.length() >0 ) {
+							oID3V2_3_0Tag.setTPE2TextInformationFrame(new TPE2TextInformationID3V2Frame(ap));
+						}
 						if (tp != null && tp.length() > 0) {
 							oID3V2_3_0Tag.setArtist(tp);
 							oID3V1_0Tag.setArtist(tp);
