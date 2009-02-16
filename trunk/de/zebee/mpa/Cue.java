@@ -13,16 +13,18 @@ public class Cue {
 	private long sampleCount;
 
 	public Cue() {
-
+		tracks = new ArrayList<Track>(40);
 	}
 
 	public Cue(String performer, String title, String album) {
+		this();
 		this.performer = performer;
 		this.title = title;
 	}
 
 	public void addTrack(int trackNumber, Track t) {
-		tracks.add(trackNumber, t);
+		if (trackNumber >= 1)
+			tracks.add(trackNumber-1, t);
 	}
 
 	public void fillOutEndTrackSectors() {
