@@ -11,6 +11,7 @@ public class Track {
 	private long endSector;
 
 	public Track() {
+		performer = "Unknown Artist";
 		
 	}
 	public Track(String performer, String title, String album) {
@@ -58,6 +59,9 @@ public class Track {
 
 	public void setTrackNumber(int trackNumber) {
 		this.trackNumber = trackNumber;
+		if (title == null) {
+			title = "Track " + trackNumber;
+		}
 	}
 	
 

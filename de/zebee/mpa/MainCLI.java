@@ -231,6 +231,7 @@ public class MainCLI {
 			String tt = ""; // track title
 			String tp = ""; // track performer
 			String ta = ""; // track album
+			int tn = -1;    // track number
 			String ap = ""; // album performer
 
 			if (writeTag) {
@@ -256,27 +257,14 @@ public class MainCLI {
 
 
 			for (int i = 0; i < cueFile.getNumberTracks() ; i++) {
+				
 				Track t = cueFile.getTrack(i);
-
-				String tn = leadingZero(t.getTrackNumber());
-
-				if (writeTag) {
-
-					String tmp = t.getTitle();
-					if (tmp != null)
-						tt = tmp;
-					else
-						tt = "Track " + tn;
-
-					tmp = t.getPerformer();
-					if (tmp != null)
-						tp = tmp;
-					else
-						tp = "Unknown Artist";
-				}
+				tn = t.getTrackNumber();
+				tt = t.getTitle();
+				tp = t.getPerformer();
 
 				String fn = replaceEvilCharacters(evalScheme(outScheme, src,
-						tn, tt, tp, ta))
+						tn+"", tt, tp, ta))
 						+ ".mp3";
 
 				if (outDir != null)
@@ -300,8 +288,8 @@ public class MainCLI {
 						ID3V1_0Tag oID3V1_0Tag = new ID3V1_0Tag();
 						ID3V2_3_0Tag oID3V2_3_0Tag = new ID3V2_3_0Tag();
 
-						if (tn != null) {
-							oID3V2_3_0Tag.setTrackNumber(Integer.parseInt(tn));
+						if (tn >= 0) {
+							oID3V2_3_0Tag.setTrackNumber(tn);
 						}
 						if (ta != null && ta.length() > 0) {
 							oID3V2_3_0Tag.setAlbum(ta);
@@ -332,12 +320,7 @@ public class MainCLI {
 			System.out.println("done.");
 		}
 	}
-
-	public static String leadingZero(int i) {
-		String t = Integer.toString(i);
-		return (t.length() < 2) ? "0" + t : t;
-	}
-
+	
 	public static String evalScheme(String scheme, String srcName,
 			String trackNo, String trackTitle, String trackPerf, String trackAlb) {
 		StringBuffer sb = new StringBuffer();
