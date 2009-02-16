@@ -72,46 +72,12 @@ public class MainCLI {
 
 	public static void main(String[] args) throws IOException {
 		System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.97.1\n");
+		
 		if (args==null || args.length<1) {
-			System.out.println("Description:");
-			System.out.println("  This tool is able to do sample granular cutting of MP3 streams via");
-			System.out.println("  the LAME-Tag's delay/padding values. A player capable of properly");
-			System.out.println("  interpreting the LAME-Tag is needed in order to enjoy this tool.\n");
-			System.out.println("Syntax:");
-			System.out.println("  java -jar pcutmp3.jar [<options>] [<source-mp3-filename>]");
-			System.out.println("  (Default operation is scanning only)\n");
-			System.out.println("Available options:");
-			System.out.println("  --cue <cue-filename>     split source mp3 via cue sheet");
-			System.out.println("                           mp3 source can be omitted if it's already");
-			System.out.println("                           referenced by the CUE sheet");
-			System.out.println("  --crop t:s-e[,t:s-e[..]] crop tracks manually, t = track#");
-			System.out.println("                           s = start sample/time (inclusive)");
-			System.out.println("                           e = end sample/time (exclusive)");
-			System.out.println("                           Time is specified in [XXm]YY[.ZZ]s");
-			System.out.println("                           for XX minutes and YY.ZZ seconds");
-			System.out.println("  --out <scheme>           specify custom naming scheme where");
-			System.out.println("                           %s = source filename (without extension)");
-			System.out.println("                           %n = track number (leading zero)");
-			System.out.println("                           %t = track title (from CUE sheet)");
-			System.out.println("                           %p = track performer (from CUE sheet)");
-			System.out.println("                           %a = album name (from CUE sheet)");
-			System.out.println("                           Default is \""+DEFAULT_NAMING_SCHEME+"\"");
-			System.out.println("  --dir <directory>        specify destination directory");
-			System.out.println("                           Default is the current working directory");
-			System.out.println("  --album <albumname>      set album name (for ID3 tag)");
-			System.out.println("  --artist <artistname>    set artist name (for ID3 tag)");
-			System.out.println("\nNote:");
-			System.out.println("  Option parameters which contain space characters must be");
-			System.out.println("  enclosed via quotation marks (see examples).");
-			System.out.println("\nExamples:");
-			System.out.println("  java -jar pcutmp3.jar --cue something.cue --out \"%n - %t\"");
-			System.out.println("  java -jar pcutmp3.jar --crop 1:0-8000,2:88.23s-3m10s largefile.mp3");
-			System.out.println("");
-			System.out.println("Developed by Sebastian Gesemann.\n" +
-					"  ID3v2 Support added by Chris Banes using the library JID3.\n" +
-			"     http://jid3.blinkenlights.org/");
-			return;
+			printHelp();
 		}
+		
+		
 		String cutParams = null;
 		boolean cutCue = false;
 		String outScheme = DEFAULT_NAMING_SCHEME;
@@ -481,6 +447,46 @@ public class MainCLI {
 			rr[i] = r.elementAt(i);
 		}
 		return rr;
+	}
+	
+	private static void printHelp() {
+		System.out.println("Description:");
+		System.out.println("  This tool is able to do sample granular cutting of MP3 streams via");
+		System.out.println("  the LAME-Tag's delay/padding values. A player capable of properly");
+		System.out.println("  interpreting the LAME-Tag is needed in order to enjoy this tool.\n");
+		System.out.println("Syntax:");
+		System.out.println("  java -jar pcutmp3.jar [<options>] [<source-mp3-filename>]");
+		System.out.println("  (Default operation is scanning only)\n");
+		System.out.println("Available options:");
+		System.out.println("  --cue <cue-filename>     split source mp3 via cue sheet");
+		System.out.println("                           mp3 source can be omitted if it's already");
+		System.out.println("                           referenced by the CUE sheet");
+		System.out.println("  --crop t:s-e[,t:s-e[..]] crop tracks manually, t = track#");
+		System.out.println("                           s = start sample/time (inclusive)");
+		System.out.println("                           e = end sample/time (exclusive)");
+		System.out.println("                           Time is specified in [XXm]YY[.ZZ]s");
+		System.out.println("                           for XX minutes and YY.ZZ seconds");
+		System.out.println("  --out <scheme>           specify custom naming scheme where");
+		System.out.println("                           %s = source filename (without extension)");
+		System.out.println("                           %n = track number (leading zero)");
+		System.out.println("                           %t = track title (from CUE sheet)");
+		System.out.println("                           %p = track performer (from CUE sheet)");
+		System.out.println("                           %a = album name (from CUE sheet)");
+		System.out.println("                           Default is \""+DEFAULT_NAMING_SCHEME+"\"");
+		System.out.println("  --dir <directory>        specify destination directory");
+		System.out.println("                           Default is the current working directory");
+		System.out.println("  --album <albumname>      set album name (for ID3 tag)");
+		System.out.println("  --artist <artistname>    set artist name (for ID3 tag)");
+		System.out.println("\nNote:");
+		System.out.println("  Option parameters which contain space characters must be");
+		System.out.println("  enclosed via quotation marks (see examples).");
+		System.out.println("\nExamples:");
+		System.out.println("  java -jar pcutmp3.jar --cue something.cue --out \"%n - %t\"");
+		System.out.println("  java -jar pcutmp3.jar --crop 1:0-8000,2:88.23s-3m10s largefile.mp3");
+		System.out.println("");
+		System.out.println("Developed by Sebastian Gesemann.\n" +
+				"  ID3v2 Support added by Chris Banes using the library JID3.\n" +
+				"     http://jid3.blinkenlights.org/");
 	}
 
 }
