@@ -1,7 +1,7 @@
 /*
  * Created on 08.07.2005
  */
-package de.zebee.mpa;
+package de.zebee.mpa.util;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Vector;
+
 
 /**
  * @author Sebastian Gesemann

@@ -19,7 +19,7 @@ import org.blinkenlights.jid3.*;
 import org.blinkenlights.jid3.v2.*;
 import org.blinkenlights.jid3.v1.*;
 
-import de.zebee.mpa.ScannedMP3;
+import de.zebee.mpa.util.ScannedMP3;
 
 /**
  * @author Sebastian Gesemann
@@ -199,6 +199,7 @@ public class MainCLI {
 			e.printStackTrace();
 			return;
 		}
+		
 		if (cutParams != null && !cutCue) {
 			tracksToCrop = parseManualCrop(cutParams, scannedMP3
 					.getSamplingFrequency());

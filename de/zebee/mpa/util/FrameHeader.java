@@ -1,4 +1,4 @@
-package de.zebee.mpa;
+package de.zebee.mpa.util;
 
 /**
  * @author Sebastian Gesemann

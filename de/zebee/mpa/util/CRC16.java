@@ -1,7 +1,7 @@
 /*
  * Created on 09.07.2005
  */
-package de.zebee.mpa;
+package de.zebee.mpa.util;
 
 /**
  * @author Sebastian Gesemann
