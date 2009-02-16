@@ -10,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -85,8 +84,7 @@ public class MainCLI {
 		int nonOptionCounter = 0;
 		String srcFile = null;
 		String outDir = null;
-		String overrideAlbum = null;
-		String overrideArtist = null;
+
 		for (int i = 0; i < args.length; i++) {
 			String currArg = args[i];
 			if (currArg.equals("--cue")) {
@@ -115,18 +113,6 @@ public class MainCLI {
 					break;
 				}
 				outDir = args[++i];
-			} else if (currArg.equals("--album")) {
-				if (i + 1 >= args.length) {
-					missingOptionParam = true;
-					break;
-				}
-				overrideAlbum = args[++i];
-			} else if (currArg.equals("--artist")) {
-				if (i + 1 >= args.length) {
-					missingOptionParam = true;
-					break;
-				}
-				overrideArtist = args[++i];
 			} else {
 				if (nonOptionCounter == 0) {
 					srcFile = currArg;
@@ -138,53 +124,58 @@ public class MainCLI {
 			System.out.println("missing option parameter");
 			return;
 		}
-		long[][] tracksToCrop = null;
-		ArrayList<Track> tracks = new ArrayList<Track>(25);
+		
+		
+		Cue cueFile = null;
+		
 		if (cutParams != null) {
 			if (cutCue) {
-				String[] track = new String[1];
-				tracksToCrop = loadCUE(cutParams, 1L << 50, tracks, track);
 				
-				
-				if (tracksToCrop != null && tracksToCrop.length > 0) {
-					// override index 1 setting of first track
-					tracksToCrop[0][1] = 0;
-				}
+				cueFile = loadCUE(cutParams, 1L << 50);
+
 				if (srcFile == null) {
-					String fs = track[0];
-					File fo = new File(track[0]);
+					srcFile = cueFile.getPathToMP3();
+					File fo = new File(srcFile);
+					
+					// If Filename isn't absolute then try to use the one given in the parms
 					if (!fo.isAbsolute()) {
 						File t = new File(cutParams);
+						
 						String p = t.getParent();
 						if (p != null) {
-							fo = new File(p, fs);
-							fs = fo.getAbsolutePath();
+							fo = new File(p, srcFile);
+							srcFile = fo.getAbsolutePath();
 						}
 					}
-					if (!fs.toLowerCase().endsWith(".mp3")) {
+					
+					if (!srcFile.toLowerCase().endsWith(".mp3")) {
 						String t = fo.getName();
 						int p = t.lastIndexOf('.');
 						if (p < 0) {
-							fs += ".mp3";
+							srcFile += ".mp3";
 						} else {
-							fs = fs.substring(0, fs.length() - t.length() + p)
+							srcFile = srcFile.substring(0, srcFile.length() - t.length() + p)
 									+ ".mp3";
 						}
 					}
-					srcFile = fs;
 				}
 			}
 		}
-		if (srcFile == null) {
+		
+
+		File srcFileFile = null;
+		if (srcFile != null) {
+			srcFileFile = new File(srcFile);
+			if (!srcFileFile.canRead()) {
+				System.out.println("can't access source mp3 file (" + srcFileFile + ")");
+				return;
+			}
+		}
+		else {
 			System.out.println("source mp3 file not given");
-			return;
 		}
-		File srcFileFile = new File(srcFile);
-		if (!srcFileFile.canRead()) {
-			System.out.println("can't access source mp3 file (" + srcFileFile
-					+ ")");
-			return;
-		}
+		
+		
 		ScannedMP3 scannedMP3 = null;
 		try {
 			System.out.println("scanning \"" + srcFile + "\" ...");
@@ -200,19 +191,17 @@ public class MainCLI {
 			return;
 		}
 		
-		if (cutParams != null && !cutCue) {
-			tracksToCrop = parseManualCrop(cutParams, scannedMP3
+		
+		/*
+		 if (cutParams != null && !cutCue) {
+			cueFile = parseManualCrop(cutParams, scannedMP3
 					.getSamplingFrequency());
 		}
-		if (overrideAlbum != null) {
-			trackTitles.add(0, overrideAlbum);
-		}
-		if (overrideArtist != null) {
-			trackPerformers.clear();
-			trackPerformers.add(0, overrideArtist);
-		}
+		*/
+		
+		
 		System.out.println(scannedMP3);
-		if (tracksToCrop != null && tracksToCrop.length > 1) {
+		if (cueFile != null) {
 			if (outScheme.indexOf("%n") < 0 && outScheme.indexOf("%t") < 0) {
 				System.out
 						.println("The usage of either %n or %t is mandatory in the naming");
@@ -221,31 +210,35 @@ public class MainCLI {
 				return;
 			}
 		}
-		if (tracksToCrop != null && tracksToCrop.length > 0) {
-			boolean writeTag = tracks.size() > 0;
-			
+		
+		
+		
+		if (cueFile != null) {
+			boolean writeTag = cueFile.getNumberTracks() > 0;
+
+			// This basically sets the end tracks sector to the total number sectors of the MP3
 			if (cutCue) {
-				tracksToCrop[tracksToCrop.length - 1][2] = scannedMP3
-						.getSampleCount();
+				cueFile.getTrack(cueFile.getNumberTracks() - 1).setEndSector(scannedMP3.getSampleCount());
 			}
+			
+			
 			String src = new File(srcFile).getName();
 			int li = src.lastIndexOf('.');
 			if (li >= 0) {
 				src = src.substring(0, li);
 			}
+			
 			String tt = ""; // track title
 			String tp = ""; // track performer
 			String ta = ""; // track album
 			String ap = ""; // album performer
-			
+
 			if (writeTag) {
-				String tmp = trackTitles.get(0);
-				if (tmp != null)
-					ta = tmp;
-				tmp = trackPerformers.get(0);
-				if (tmp != null)
-					ap = tmp;
+					ta = cueFile.getTitle();
+					ap = cueFile.getPerformer();
 			}
+			
+			
 			if (outDir != null && outDir.length() > 0) {
 				char p = File.separatorChar;
 				if (outDir.charAt(outDir.length() - 1) != p) {
@@ -260,43 +253,40 @@ public class MainCLI {
 			} else {
 				outDir = null;
 			}
+
 			
-			
-			for (int i = 0; i < tracksToCrop.length; i++) {
-				long[] track = tracksToCrop[i];
-				int tracknumint = (int) track[0];
-				String tn = leadingZero((int) track[0]);
+			for (int i = 1; i <= cueFile.getNumberTracks() ; i++) {
+				Track t = cueFile.getTrack(i);
+				
+				String tn = leadingZero(i);
+				
 				if (writeTag) {
-					
-					Track t = tracks.get(tracknumint);
-					
+
 					String tmp = t.getTitle();
 					if (tmp != null)
 						tt = tmp;
 					else
 						tt = "Track " + tn;
-					
-					
+
 					tmp = t.getPerformer();
 					if (tmp != null)
 						tp = tmp;
 					else
 						tp = "Unknown Artist";
 				}
+				
 				String fn = replaceEvilCharacters(evalScheme(outScheme, src,
 						tn, tt, tp, ta))
 						+ ".mp3";
-				
-				
+
 				if (outDir != null)
 					fn = outDir + fn;
-				
-				
+
 				System.out.println("writing \"" + fn + "\" ...");
 				FileOutputStream fops = new FileOutputStream(fn);
-				
+
 				try {
-					scannedMP3.crop(track[1], track[2], new FileInputStream(
+					scannedMP3.crop(t.getStartSector(), t.getEndSector(), new FileInputStream(
 							srcFileFile), fops);
 				} finally {
 					fops.close();
@@ -394,93 +384,112 @@ public class MainCLI {
 		return s;
 	}
 
-	public static long[][] loadCUE(String filename, long sampleCount, ArrayList<Track> tracks, String[] file) throws IOException {
-		Vector<long[]> v = new Vector<long[]>();
-		FileInputStream fips = new FileInputStream(filename);
+	public static Cue loadCUE(String cueFilename, long sampleCount)
+			throws IOException {
+
+		Cue cue = new Cue();
+
+		cue.setSampleCount(sampleCount);
+
+		FileInputStream fips = new FileInputStream(cueFilename);
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fips));
-			int trackNr = 0;
-			String fff = null;
-			String line = null;
-			try {
-				do {
-					
-					// Next line
-					line = br.readLine().trim();
+			int trackNumber = 0;
 
-					StringTokenizer st = new StringTokenizer(line," ",false);
-					
-					if (st.countTokens()>0) {
-						
-						Track track = new Track();
-						
-						String token = st.nextToken().toLowerCase();
-						if (token.equals("file")) {
-							if (fff == null) {
-								String t = "";
-								while (st.hasMoreTokens()) {
-									t = st.nextToken();
-								}
-								t = line.substring(5,line.length()-t.length()).trim();
-								if (t.startsWith("\"") && t.endsWith("\"") && t.length()>=2) {
-									t = t.substring(1,t.length()-1);
-								}
-								fff = t;
+			// Filename and Path of the MP3 to be split
+			String mp3Filename = null;
+
+			// Next Line in Cue File
+			String line = null;
+
+			boolean hitTracksYet = false;
+			
+			do {
+				// Next line
+				line = br.readLine().trim();
+
+				StringTokenizer st = new StringTokenizer(line, " ", false);
+
+				if (st.countTokens() > 0) {
+
+					Track currentTrack = new Track();
+					String token = st.nextToken().toLowerCase();
+
+					if (token.equals("file")) {
+						if (mp3Filename == null) {
+							String t = "";
+							while (st.hasMoreTokens()) {
+								t = st.nextToken();
 							}
-						}
-						
-						else if (token.equals("performer")) {
-							if (st.hasMoreTokens()) {
-								String t = st.nextToken();
-								while (st.hasMoreTokens()) {
-									t += " "+st.nextToken();
-								}
-								track.setPerformer(filter(t));
+
+							t = line.substring(5, line.length() - t.length())
+									.trim();
+							if (t.startsWith("\"") && t.endsWith("\"")
+									&& t.length() >= 2) {
+								t = t.substring(1, t.length() - 1);
 							}
+							mp3Filename = t;
+							cue.setPathToMP3(mp3Filename);
 						}
-						
-						else if (token.equals("title")) {
-							if (st.hasMoreTokens()) {
-								String t = st.nextToken();
-								while (st.hasMoreTokens()) {
-									t += " "+st.nextToken();
-								}
-								track.setTitle(filter(t));
-							}
-						}
-						
-						else if (token.equals("track")) {
-							if (st.hasMoreTokens()) {
-								trackNr = Math.max(trackNr,Integer.parseInt(st.nextToken()));
-							}
-						}
-						
-						else if (token.equals("index")) {
-							try {
-								int idx = Integer.parseInt(st.nextToken());
-								long smp = MSFstring2sector(st.nextToken()) * 588L;
-								if (idx==1) {
-									v.add(new long[]{trackNr,smp,sampleCount});
-									trackNr++;
-								}
-							} catch (NoSuchElementException nse) {}
-						}
-						
-						tracks.add(trackNr, track);
-						
 					}
-				} while (line != null);
-			} finally {
-				file[0] = fff;
-			}
-			long[][] result = new long[v.size()][];
-			for (int i=v.size()-1; i>=0; i--) {
-				long[] t = v.elementAt(i);
-				t[2] = sampleCount;
-				sampleCount = t[1];
-				result[i] = t;
-			}
-			return result;
+
+					else if (token.equals("performer")) {
+						if (st.hasMoreTokens()) {
+							String t = st.nextToken();
+							while (st.hasMoreTokens()) {
+								t += " " + st.nextToken();
+							}
+
+							if (hitTracksYet) {
+								currentTrack.setPerformer(filter(t));
+							} else {
+								cue.setPerformer(filter(t));
+							}
+						}
+					} else if (token.equals("title")) {
+						if (st.hasMoreTokens()) {
+							String t = st.nextToken();
+							while (st.hasMoreTokens()) {
+								t += " " + st.nextToken();
+							}
+
+							if (hitTracksYet) {
+								currentTrack.setTitle(filter(t));
+							} else {
+								cue.setTitle(filter(t));
+							}
+
+						}
+					} else if (token.equals("track")) {
+						if (st.hasMoreTokens()) {
+							trackNumber = Math.max(trackNumber, Integer
+									.parseInt(st.nextToken()));
+						}
+						currentTrack.setTrackNumber(trackNumber);
+						hitTracksYet = true;
+					}
+
+					else if (token.equals("index")) {
+						try {
+							int idx = Integer.parseInt(st.nextToken());
+							long smp = MSFstring2sector(st.nextToken()) * 588L;
+							if (idx == 1) {
+								currentTrack.setStartSector(smp);
+								trackNumber++;
+							}
+						} catch (NoSuchElementException nse) {}
+					}
+
+					cue.addTrack(trackNumber, currentTrack);
+					currentTrack = null;
+
+				}
+			} while (line != null);
+			
+			cue.fillOutEndTrackSectors();
+
+			return cue;
+
 		} finally {
 			fips.close();
 		}
