@@ -1,9 +1,10 @@
 /*
  * Created on 08.07.2005
  */
-package de.zebee.mpa;
+package de.zebee.mpa.util;
 
 import java.util.Arrays;
+
 
 /**
  * @author Sebastian Gesemann

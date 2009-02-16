@@ -2,11 +2,12 @@
  * Created on 20.02.2003
  *
  */
-package de.zebee.mpa;
+package de.zebee.mpa.util;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+
 
 
 /**
