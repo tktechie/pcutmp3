@@ -14,9 +14,12 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import org.blinkenlights.jid3.*;
-import org.blinkenlights.jid3.v2.*;
-import org.blinkenlights.jid3.v1.*;
+
+import org.blinkenlights.jid3.MP3File;
+import org.blinkenlights.jid3.MediaFile;
+import org.blinkenlights.jid3.v1.ID3V1_0Tag;
+import org.blinkenlights.jid3.v2.ID3V2_3_0Tag;
+import org.blinkenlights.jid3.v2.TPE2TextInformationID3V2Frame;
 
 import de.zebee.mpa.util.ScannedMP3;
 
@@ -73,7 +76,7 @@ public class MainCLI {
     public static final String DEFAULT_NAMING_SCHEME = "%n. %p - %t";
 
     public static void main(String[] args) throws IOException {
-        System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.97.1\n");
+        System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.98\n");
 
         if (args == null || args.length < 1) {
             printHelp();
@@ -594,9 +597,9 @@ public class MainCLI {
         System.out.println("  java -jar pcutmp3.jar --cue something.cue --out \"%n - %t\"");
         System.out.println("  java -jar pcutmp3.jar --crop 1:0-8000,2:88.23s-3m10s largefile.mp3");
         System.out.println("");
-        System.out.println("Developed by Sebastian Gesemann.\n"
-                + "  ID3v2 Support added by Chris Banes using the library JID3.\n"
+        System.out.println("Originally developed by Sebastian Gesemann.\n");
+        System.out.println("Maintained by Chris Banes");
+        System.out.println("\n  ID3v2 Support added by Chris Banes using the library JID3.\n"
                 + "     http://jid3.blinkenlights.org/");
     }
-
 }
