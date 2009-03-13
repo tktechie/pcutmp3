@@ -76,7 +76,7 @@ public class MainCLI {
     public static final String DEFAULT_NAMING_SCHEME = "%n. %p - %t";
 
     public static void main(String[] args) throws IOException {
-        System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.98\n");
+        System.out.println("\nPCutMP3 -- Properly Cut MP3 v0.98 BETA\n");
 
         if (args == null || args.length < 1) {
             printHelp();
@@ -100,14 +100,14 @@ public class MainCLI {
                 cutParams = args[++i];
                 cutCue = true;
             }
-            else if (currArg.equals("--crop")) {
-                if (i + 1 >= args.length) {
-                    missingOptionParam = true;
-                    break;
-                }
-                cutParams = args[++i];
-                cutCue = false;
-            }
+            // else if (currArg.equals("--crop")) {
+            // if (i + 1 >= args.length) {
+            // missingOptionParam = true;
+            // break;
+            // }
+            // cutParams = args[++i];
+            // cutCue = false;
+            // }
             else if (currArg.equals("--out")) {
                 if (i + 1 >= args.length) {
                     missingOptionParam = true;
@@ -573,11 +573,16 @@ public class MainCLI {
         System.out.println("  --cue <cue-filename>     split source mp3 via cue sheet");
         System.out.println("                           mp3 source can be omitted if it's already");
         System.out.println("                           referenced by the CUE sheet");
-        System.out.println("  --crop t:s-e[,t:s-e[..]] crop tracks manually, t = track#");
-        System.out.println("                           s = start sample/time (inclusive)");
-        System.out.println("                           e = end sample/time (exclusive)");
-        System.out.println("                           Time is specified in [XXm]YY[.ZZ]s");
-        System.out.println("                           for XX minutes and YY.ZZ seconds");
+        // System.out.println(
+        // "  --crop t:s-e[,t:s-e[..]] crop tracks manually, t = track#");
+        // System.out.println(
+        // "                           s = start sample/time (inclusive)");
+        // System.out.println(
+        // "                           e = end sample/time (exclusive)");
+        // System.out.println(
+        // "                           Time is specified in [XXm]YY[.ZZ]s");
+        // System.out.println(
+        // "                           for XX minutes and YY.ZZ seconds");
         System.out.println("  --out <scheme>           specify custom naming scheme where");
         System.out.println("                           %s = source filename (without extension)");
         System.out.println("                           %n = track number (leading zero)");
