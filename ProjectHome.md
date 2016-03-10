@@ -1,0 +1,1 @@
+pcutmp3 was developed Sebastian Gesemann as a tool to perfectly MP3s, allowing for players with gapless capability to play back the cut files gaplessly.
